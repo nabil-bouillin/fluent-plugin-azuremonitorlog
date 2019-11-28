@@ -14,9 +14,9 @@ Gem::Specification.new do |gem|
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
-  gem.add_dependency "fluentd", ">= 0.10.30"
-  gem.add_dependency "azure_mgmt_monitor", "~> 0.11.0"
-  gem.add_development_dependency "rake", ">= 0.9.2"
-  gem.add_development_dependency "test-unit", ">= 3.1.0"
+  gem.add_dependency "fluentd", "~> 1.7.4"
+  gem.add_dependency "azure_mgmt_monitor", "~> 0.17.5"
+  gem.add_development_dependency "rake", "~> 13.0.1"
+  gem.add_development_dependency "test-unit", "~> 3.3.4"
   gem.license = 'MIT'
 end
