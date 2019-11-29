@@ -4,8 +4,6 @@ require 'azure_mgmt_monitor'
 module Fluent::Plugin
 class AzureMonitorLogInput < Input
     Fluent::Plugin.register_input("azuremonitorlog", self)
-
-    helpers :compat_parameters
     
     # Define parameters for API Monitor
     config_param :tag, :string, :default => "azuremonitorlog"
@@ -72,8 +70,7 @@ class AzureMonitorLogInput < Input
           end_time = @next_fetch_time
           log.debug "start time: #{start_time}, end time: #{end_time}"
           filter = "eventTimestamp ge '#{start_time}' and eventTimestamp le '#{end_time}'"
-          #filter = "eventTimestamp ge '2019-11-20T20:00:00Z' and eventTimestamp le '2019-11-27T20:00:00Z'"
-  
+
           if !@filter.empty?
             filter += " and #{@filter}"
           end
