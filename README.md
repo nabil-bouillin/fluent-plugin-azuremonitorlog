@@ -45,7 +45,7 @@ Documentation for select and filter can be found [here](https://docs.microsoft.c
     subscription_id [Azure_Subscription_Id]
     client_id [Azure_Client_Id]
     client_secret [Azure_Client_Secret]
-    select_filter eventName,id,resourceGroupName,resourceProviderName,operationName,status,eventTimestamp,correlationId,submissionTimestamp,level
+    select eventName,id,resourceGroupName,resourceProviderName,operationName,status,eventTimestamp,correlationId,submissionTimestamp,level
 </source>
 
 ```
