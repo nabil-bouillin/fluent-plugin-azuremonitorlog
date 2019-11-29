@@ -42,12 +42,12 @@ class AzureMonitorLogInputTest < Test::Unit::TestCase
             assert_equal '2015-04-01', d.instance.api_version
         end
 
-        #test 'configuration query options for monitor log' do
-        #    d = create_driver_azure_monitor_log
-        #    monitor_log_async = d.instance.get_monitor_log_async(d.instance.filter, {})
-        #    assert_equal '2015-04-01', monitor_log_async[:query_params]['api-version']
-        #    assert_equal 'eventChannels eq \'Admin, Operation\'', monitor_log_async[:query_params]['$filter']
-        #    assert_equal 'eventName,id,resourceGroupName,resourceProviderName,operationName,status,eventTimestamp,correlationId', monitor_log_async[:query_params]['$select']
-        #end
+        test 'configuration query options for monitor log' do
+            d = create_driver_azure_monitor_log
+            query_options = d.instance.set_query_options(d.instance.filter, {})
+            assert_equal '2015-04-01', query_options[:query_params]['api-version']
+            assert_equal 'eventChannels eq \'Admin, Operation\'', query_options[:query_params]['$filter']
+            assert_equal 'eventName,id,resourceGroupName,resourceProviderName,operationName,status,eventTimestamp,correlationId', query_options[:query_params]['$select']
+        end
     end 
 end

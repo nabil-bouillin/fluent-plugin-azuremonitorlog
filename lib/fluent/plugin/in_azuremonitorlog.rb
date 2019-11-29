@@ -21,15 +21,10 @@ class AzureMonitorLogInput < Input
 
     def configure(conf)
         super
-        log.error(@tenant_id)
-        log.error(@client_id)
-        log.error(@client_secret)
-        log.error(@subscription_id)
         provider = MsRestAzure::ApplicationTokenProvider.new(@tenant_id, @client_id, @client_secret)
         credentials = MsRest::TokenCredentials.new(provider)
         @client = Azure::Monitor::Mgmt::V2015_04_01::MonitorManagementClient.new(credentials);
         @client.subscription_id = @subscription_id
-        @client.api_version = @api_version
     end
 
     def start
@@ -45,6 +40,26 @@ class AzureMonitorLogInput < Input
         @watcher.join
     end
 
+    def set_query_options(filter, custom_headers)
+      fail ArgumentError, '@client.subscription_id is nil' if @client.subscription_id.nil?
+
+      request_headers = {}
+      request_headers['Content-Type'] = 'application/json; charset=utf-8'
+
+      # Set Headers
+      request_headers['x-ms-client-request-id'] = SecureRandom.uuid
+      request_headers['accept-language'] = @client.accept_language unless @client.accept_language.nil?
+
+      request_url = @client.base_url
+      options = {
+          middlewares: [[MsRest::RetryPolicyMiddleware, times: 3, retry: 0.02], [:cookie_jar]],
+          path_params: {'subscriptionId' => @client.subscription_id},
+          query_params: {'api-version' => @api_version,'$filter' => filter,'$select' => @select},
+          headers: request_headers.merge(custom_headers || {}),
+          base_url: request_url
+      }
+    end
+      
     private 
 
       def watch
@@ -80,27 +95,9 @@ class AzureMonitorLogInput < Input
       
       
 
-    def get_monitor_log_async(filter, custom_headers=nil)
-      fail ArgumentError, '@client.api_version is nil' if @client.api_version.nil?
-      fail ArgumentError, '@client.subscription_id is nil' if @client.subscription_id.nil?
-
-      request_headers = {}
-      request_headers['Content-Type'] = 'application/json; charset=utf-8'
-
-      # Set Headers
-      request_headers['x-ms-client-request-id'] = SecureRandom.uuid
-      request_headers['accept-language'] = @client.accept_language unless @client.accept_language.nil?
+    def get_monitor_log_async(filter=nil, custom_headers=nil)
+      options = set_query_options(filter, custom_headers)
       path_template = 'subscriptions/{subscriptionId}/providers/microsoft.insights/eventtypes/management/values'
-
-      request_url = @client.base_url
-      log.error(filter)
-      options = {
-          middlewares: [[MsRest::RetryPolicyMiddleware, times: 3, retry: 0.02], [:cookie_jar]],
-          path_params: {'subscriptionId' => @client.subscription_id},
-          query_params: {'api-version' => @client.api_version,'$filter' => filter,'$select' => @select},
-          headers: request_headers.merge(custom_headers || {}),
-          base_url: request_url
-      }
       promise = @client.make_request_async(:get, path_template, options)
       promise = promise.then do |result|
         http_response = result.response
@@ -114,12 +111,9 @@ class AzureMonitorLogInput < Input
         result.request_id = http_response['x-ms-request-id'] unless http_response['x-ms-request-id'].nil?
         result.correlation_request_id = http_response['x-ms-correlation-request-id'] unless http_response['x-ms-correlation-request-id'].nil?
         result.client_request_id = http_response['x-ms-client-request-id'] unless http_response['x-ms-client-request-id'].nil?
-        # Deserialize Response
+
         if status_code == 200
           begin
-            #parsed_response = response_content.to_s.empty? ? nil : JSON.load(response_content)
-            #result_mapper = Azure::Monitor::Mgmt::V2015_04_01::Models::EventDataCollection.mapper() 
-            #result.body = @client.deserialize(result_mapper,parsed_response)
             result.body =  response_content.to_s.empty? ? nil : JSON.load(response_content)
           rescue Exception => e
             fail MsRest::DeserializationError.new('Error occurred in deserializing the response', e.message, e.backtrace, result)
