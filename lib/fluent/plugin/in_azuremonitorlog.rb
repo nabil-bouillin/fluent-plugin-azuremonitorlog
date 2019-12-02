@@ -2,6 +2,7 @@ require 'fluent/plugin/input'
 require 'azure_mgmt_monitor'
 
 module Fluent::Plugin
+  module Azure::Monitor::Mgmt::V2015_04_01
 class AzureMonitorLogInput < Input
     Fluent::Plugin.register_input("azuremonitorlog", self)
     
@@ -69,8 +70,7 @@ class AzureMonitorLogInput < Input
           start_time = @next_fetch_time - @interval
           end_time = @next_fetch_time
           log.debug "start time: #{start_time}, end time: #{end_time}"
-          filter = "eventTimestamp ge '#{start_time}' and eventTimestamp le '#{end_time}'"
-
+          filter = "eventTimestamp ge '#{start_time.utc.iso8601}' and eventTimestamp le '#{end_time.utc.iso8601}'"
           if !@filter.empty?
             filter += " and #{@filter}"
           end
@@ -121,4 +121,5 @@ class AzureMonitorLogInput < Input
       promise.execute
     end
   end
+end
 end
