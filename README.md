@@ -1,4 +1,9 @@
 # fluent-plugin-azuremonitorlog, a plugin for [Fluentd](http://fluentd.org) 
+
+| fluent_mgmt_monitor | fluentd | ruby |
+|------------------------|---------|------|
+| >= 0.17.5 | >= v1.7.4 | >= 2.5 |
+
 ## Overview
 
 [Azure Monitor log](https://docs.microsoft.com/en-us/rest/api/monitor/ActivityLogs/List) input plugin. 
