@@ -14,7 +14,7 @@ class AzureMonitorLogInput < Input
     config_param :client_secret, :string, :default => nil, :secret => true
 
     config_param :select, :string, :default => nil
-    config_param :filter, :string, :default => "eventChannels eq 'Admin, Operation'"
+    config_param :filter, :string, :default => "eventChannels eq 'Operation'"
     config_param :interval, :integer,:default => 300
     config_param :api_version, :string, :default => '2015-04-01'
 
@@ -80,7 +80,7 @@ class AzureMonitorLogInput < Input
     
           if !monitor_logs.body['value'].nil? and  monitor_logs.body['value'].any?
             monitor_logs.body['value'].each {|val|
-              router.emit(@tag, Fluent::Engine.now, val)
+              router.emit(@tag, val['eventTimestamp'], val)
             }
           else
             log.debug "empty"
@@ -112,6 +112,7 @@ class AzureMonitorLogInput < Input
         if status_code == 200
           begin
             result.body =  response_content.to_s.empty? ? nil : JSON.load(response_content)
+            log.debug(result.body)
           rescue Exception => e
             fail MsRest::DeserializationError.new('Error occurred in deserializing the response', e.message, e.backtrace, result)
           end
