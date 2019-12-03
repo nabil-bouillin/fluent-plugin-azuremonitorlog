@@ -1,5 +1,6 @@
 require 'fluent/plugin/input'
 require 'azure_mgmt_monitor'
+require 'date'
 
 module Fluent::Plugin
   module Azure::Monitor::Mgmt::V2015_04_01
@@ -80,7 +81,8 @@ class AzureMonitorLogInput < Input
     
           if !monitor_logs.body['value'].nil? and  monitor_logs.body['value'].any?
             monitor_logs.body['value'].each {|val|
-              router.emit(@tag, val['eventTimestamp'], val)
+              time = DateTime.strptime(val['eventTimestamp'])
+              router.emit(@tag, time.to_time.to_i, val)
             }
           else
             log.debug "empty"
@@ -112,7 +114,6 @@ class AzureMonitorLogInput < Input
         if status_code == 200
           begin
             result.body =  response_content.to_s.empty? ? nil : JSON.load(response_content)
-            log.debug(result.body)
           rescue Exception => e
             fail MsRest::DeserializationError.new('Error occurred in deserializing the response', e.message, e.backtrace, result)
           end
