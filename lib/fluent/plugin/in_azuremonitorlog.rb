@@ -81,8 +81,8 @@ class AzureMonitorLogInput < Input
     
           if !monitor_logs.body['value'].nil? and  monitor_logs.body['value'].any?
             monitor_logs.body['value'].each {|val|
-              time = DateTime.strptime(val['eventTimestamp'])
-              router.emit(@tag, time.to_time.to_i, val)
+              time = DateTime.parse(val['eventTimestamp'])
+              router.emit(@tag, Fluent::EventTime.from_time(time.to_time), val)
             }
           else
             log.debug "empty"
